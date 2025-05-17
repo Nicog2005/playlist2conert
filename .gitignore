@@ -1,0 +1,12 @@
+# Prevent secret keys from being tracked
+.streamlit/secrets.toml
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Jupyter and VSCode stuff (optional)
+.ipynb_checkpoints/
+.vscode/
+.env
+.DS_Store
