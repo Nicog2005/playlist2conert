@@ -4,8 +4,7 @@ import base64
 import pandas as pd
 import datetime
 import urllib.parse
-import plotly
-from plotly import express as px
+import plotly.express as px
 import pydeck as pdk
 
 # --- App configuration ---
