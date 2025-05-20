@@ -7,6 +7,7 @@ This Streamlit app lets users input a Spotify playlist and a city to:
 - See concert locations on a map.
 - Get alerts if no concerts are found.
 - Watch for a loading spinner while data is processed.
+- Receive email with concert information
 
 ---
 
