@@ -18,11 +18,11 @@ https://playlist2concert.streamlit.app/
 
 ## Requirements
 
-streamlit
-requests
-pandas
-plotly
-pydeck
+- streamlit
+- requests
+- pandas
+- plotly
+- pydeck
 
 ## Secrets Configuration
 
