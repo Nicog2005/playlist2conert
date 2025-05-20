@@ -32,6 +32,7 @@ Create a .streamlit/secrets.toml file to store your API keys:
 - TICKETMASTER_API_KEY = "your_ticketmaster_key"
 - SPOTIFY_CLIENT_ID = "your_spotify_client_id"
 - SPOTIFY_CLIENT_SECRET = "your_spotify_client_secret"
+
 ""
 
 ## Running Locally
