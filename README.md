@@ -29,19 +29,20 @@ https://playlist2concert.streamlit.app/
 Create a .streamlit/secrets.toml file to store your API keys:
 
 ""
-TICKETMASTER_API_KEY = "your_ticketmaster_key"
-SPOTIFY_CLIENT_ID = "your_spotify_client_id"
-SPOTIFY_CLIENT_SECRET = "your_spotify_client_secret"
+- TICKETMASTER_API_KEY = "your_ticketmaster_key"
+- SPOTIFY_CLIENT_ID = "your_spotify_client_id"
+- SPOTIFY_CLIENT_SECRET = "your_spotify_client_secret"
 ""
 
 ## Running Locally
 
-streamlit run prueba.py
+- streamlit run prueba.py
 
 ## Project Structure
 
+```plaintext
 playlist2concert/
 ├── prueba.py                 # Main Streamlit app
 ├── requirements.txt          # Dependencies
 └── .streamlit/
-    └── secrets.toml   
+    └── secrets.toml          # (Local only) API keys
