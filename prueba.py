@@ -6,6 +6,8 @@ import datetime
 import urllib.parse
 import plotly.express as px
 import pydeck as pdk
+import smtplib
+from email.message import EmailMessage
 
 # --- App configuration ---
 st.set_page_config(page_title="StreamLive", layout="wide")
@@ -174,17 +176,88 @@ else:
                         st.subheader("Concert Map")
                         df_map = pd.DataFrame(map_data)
                         layer = pdk.Layer("ScatterplotLayer",
-                                        data=df_map,
-                                        get_position='[lon, lat]',
-                                        get_radius=70000,
-                                        get_fill_color=[200, 30, 0, 160])
+                                          data=df_map,
+                                          get_position='[lon, lat]',
+                                          get_radius=70000,
+                                          get_fill_color=[200, 30, 0, 160])
                         view_state = pdk.ViewState(latitude=df_map["lat"].mean(),
-                                                longitude=df_map["lon"].mean(),
-                                                zoom=2)
+                                                   longitude=df_map["lon"].mean(),
+                                                   zoom=2)
                         st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
 
                     if not concert_counts:
                         st.info("No concerts found for the artists in this playlist in the selected city or date range.")
+
+                    # --- Optional Email Sending ---
+                    st.markdown("<span style='color:red'><h4>📧 Receive Full Concert Details by Email (Optional)</h4></span>", unsafe_allow_html=True)
+                    email_input = st.text_input("Do you want to receive the information on your email?", placeholder="Enter your email")
+
+                    def send_email(recipient, subject, content):
+                        try:
+                            email = EmailMessage()
+                            email["From"] = st.secrets["EMAIL_USER"]
+                            email["To"] = recipient
+                            email["Subject"] = subject
+                            email.set_content(content)
+
+                            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                                smtp.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASS"])
+                                smtp.send_message(email)
+                            return True
+                        except Exception as e:
+                            st.error(f"Failed to send email: {e}")
+                            return False
+
+                    if email_input:
+                        full_info = "🎤 Full Concert Info from StreamLive\n\n"
+
+                        for name, artist_id in zip(artists, artist_ids):
+                            if name not in concert_counts:
+                                continue 
+
+                            artist_info = requests.get(f"https://api.spotify.com/v1/artists/{artist_id}", headers=headers).json()
+                            popularity = artist_info.get("popularity", 0)
+                            followers = artist_info.get("followers", {}).get("total", 0)
+                            genres = artist_info.get("genres", [])
+
+                            full_info += f"=== {name} ===\n"
+                            full_info += f"Popularity: {popularity}/100\n"
+                            full_info += f"Followers: {followers:,}\n"
+                            full_info += f"Genres: {', '.join(genres) if genres else 'N/A'}\n"
+                            full_info += f"Concerts:\n"
+
+                            params = {
+                                "apikey": TICKETMASTER_API_KEY,
+                                "keyword": name,
+                                "startDateTime": start_date.isoformat() + "T00:00:00Z",
+                                "endDateTime": end_date.isoformat() + "T23:59:59Z",
+                                "size": 5
+                            }
+                            if city.strip():
+                                params["city"] = city.strip()
+                            response = requests.get("https://app.ticketmaster.com/discovery/v2/events.json", params=params)
+                            events = response.json().get("_embedded", {}).get("events", [])
+
+                            for event in events:
+                                venue_info = event.get("_embedded", {}).get("venues", [{}])[0]
+                                venue = venue_info.get("name", "Venue N/A")
+                                city_name = venue_info.get("city", {}).get("name", "City N/A")
+                                country_name = venue_info.get("country", {}).get("name", "Country N/A")
+                                date = event["dates"]["start"].get("localDate", "Date N/A")
+                                event_name = event["name"]
+
+                                try:
+                                    formatted_date = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%b %d, %Y")
+                                except:
+                                    formatted_date = date
+
+                                full_info += f"- {event_name} | {venue}, {city_name}, {country_name} | {formatted_date}\n"
+
+                            full_info += "\n"
+
+                        if send_email(email_input, "🎤 Your Concert Details from StreamLive", full_info):
+                            st.success("✅ Full concert details sent to your inbox!")
+
 
             except Exception as e:
                 st.error(f"An error occurred: {e}")
